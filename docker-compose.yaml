@@ -8,6 +8,10 @@ services:
       - "3000:5000"
     depends_on:
       - mysql
+    environment:
+      MYSQL_USER: root
+      MYSQL_DATABASE: 47bdt
+      MYSQL_ROOT_PASSWORD: 47bdt
     deploy:
       replicas: 3
       #update_config:
