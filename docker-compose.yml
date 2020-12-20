@@ -1,0 +1,20 @@
+version: '2'
+services:
+  mysql:
+    image: henriquealbano/docker_com_mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - /var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD= fiap47bdt
+      - MYSQL_USER= root
+      - MYSQL_DATABASE= fiap47bdt
+  api:
+    image: henriquealbano/api-final
+    ports:
+      - "4000:5000"
+    links:
+      - mysql
+    depends_on:
+      - mysql

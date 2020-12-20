@@ -1,9 +1,13 @@
-FROM mysql
+FROM python:2
 
-MAINTAINER Rafael Marques <rafamds1942@gmail.com>
+MAINTAINER RM338145
 
-#ENV MYSQL_USER=root \
-#    MYSQL_DATABASE=fiapdb \
-#    MYSQL_ROOT_PASSWORD=senhaFiap
+ADD api.py requirements.txt /
+RUN pip install -r ./requirements.txt
 
-ADD ./aso.sql /docker-entrypoint-initdb.d
+ENV PORT=5000
+
+EXPOSE $PORT
+HEALTHCHECK CMD curl --fail http://localhost:$PORT || exit 1
+
+CMD [ "python", "./api.py" , "0.0.0.0"]

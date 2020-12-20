@@ -1,58 +1,55 @@
-#!/usr/bin/env python
-import json
-import traceback
-import base64
-import logging
-from datetime import date, datetime
-from flask import Flask, request, jsonify
-from flask_cors import CORS, cross_origin
-from flaskext.mysql import MySQL
+import flask
+from flask import request, jsonify
+import mysql.connector
 
-mysql = MySQL()
-app = Flask(__name__)
-app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = '47bdt'
-app.config['MYSQL_DATABASE_DB'] = '47bdt'
-app.config['MYSQL_DATABASE_HOST'] = 'mysql'
-#app.config['CORS_HEADERS'] = 'Content-Type'
-mysql.init_app(app)
+app = flask.Flask(__name__)
+app.config["DEBUG"] = True
 
-def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    raise TypeError ("Type %s not serializable" % type(obj))
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
 
-def teste():
-    cursor = mysql.connect().cursor()
-    cursor.execute("SELECT * from Aso")
-    print cursor, str(cursor)
-    r = [dict((cursor.description[i][0], value)
-              for i, value in enumerate(row)) for row in cursor.fetchall()]
-    json_string = json.dumps(r, default=json_serial)
-    print json_string
-    return "hola"
 
-@app.route("/")
-def hello():
-    return "Benvido a API FIAP!\n"
+@app.route('/', methods=['GET'])
+def home():
+    return '''Bem vindo a API! para testar digite o caminho /api/testeConsulta'''
 
-@app.route("/Teste")
-def Teste():
-    return "Welcome to teste!\n"
 
-@app.route("/getDados")
-def getDados():
-    try:
-        cursor = mysql.connect().cursor()
-        cursor.execute("SELECT * from Aso")
-        r = [dict((cursor.description[i][0], value)
-            for i, value in enumerate(row)) for row in cursor.fetchall()]
-        json_string = json.dumps(r, default=json_serial)
-        return json_string
-    except Exception as e:
-        return 'Erro /getDados' + str(e) + traceback.format_exc()
+@app.route('/api/testeConsulta', methods=['GET'])
+def api_all():
 
-if __name__ == "__main__":
-    #teste()
-    app.run(host='0.0.0.0',debug=True)
+
+    mydb = mysql.connector.connect(
+      host="localhost",
+      user="root",
+      password="fiap47bdt",
+      database="rm338145"
+    )
+    cursor = mydb.cursor()
+
+    query = ("SELECT * FROM tableFiap;")
+    #query = ("show databases;")
+    
+    cursor.execute(query)
+    #for (name) in cursor:
+     #  print("{}, {} ".format(
+      #  id, name))
+    r = cursor.fetchall()
+    return str(r)
+    
+    cursor.close()
+
+    mydb.close()
+    
+
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return "<h1>404</h1><p>The resource could not be found.</p>", 404
+
+
+
+app.run()
